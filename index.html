@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Cenit — Panel de Gestión</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8fafc;
+    --sidebar-bg: #011b57; /* Azul Marca 1 */
+    --accent: #033fbb;      /* Azul Marca 2 */
+    --accent-light: #2082d8; /* Azul Marca 3 */
+    --text-dark: #1e293b;
+    --text-light: #ffffff;
+    --border: #e2e8f0;
+    --font-main: 'Poppins', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text-dark);
+    font-family: var(--font-main);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    color: var(--text-light);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+  }
+
+  .logo-container {
+    margin-bottom: 3rem;
+    text-align: center;
+  }
+
+  .logo-container img {
+    max-width: 150px;
+    height: auto;
+  }
+
+  .clinic-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent-light);
+    margin-top: 1rem;
+  }
+
+  /* Main Content */
+  .main-content {
+    margin-left: 260px;
+    flex: 1;
+    padding: 2rem;
+  }
+
+  header {
+    margin-bottom: 2rem;
+  }
+
+  /* Dashboard Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  }
+
+  .stat-val {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* Table Style */
+  .table-container {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    background: #f1f5f9;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--sidebar-bg);
+  }
+
+  td {
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  tr:hover { background: #f8fafc; }
+
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .status-qualified { background: #dcfce7; color: #166534; }
+  .status-pending { background: #fef9c3; color: #854d0e; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo-container">
+    <img src="logo.png" alt="New Cenit Logo">
+    <div id="clinicName" class="clinic-name">Cargando clínica...</div>
+  </div>
+</div>
+
+<div class="main-content">
+  <header>
+    <h1>Gestión de Pacientes</h1>
+    <p>Control de leads y automatizaciones activas</p>
+  </header>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <p>Total Leads</p>
+      <div id="statTotal" class="stat-val">0</div>
+    </div>
+    <div class="stat-card">
+      <p>Cualificados</p>
+      <div id="statQual" class="stat-val">0</div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Estado</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody id="leadsTable">
+        </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  // REEMPLAZA ESTOS DATOS
+  SHEET_ID: 'TU_ID_DE_GOOGLE_SHEETS_AQUI',
+  SHEET_NAME: 'Hoja 1',
+  CLINIC_NAME: 'New Cenit Dental'
+};
+
+async function loadFromSheet() {
+  const url = `https://docs.google.com/spreadsheets/d/$1xA7hRXOl-W-OW7ys1qryzc1BWoBIdowSN9sPXuE1wxw/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(LEADS)}`;
+  
+  try {
+    const res = await fetch(url);
+    const text = await res.text();
+    // Extraemos el JSON puro de la respuesta de Google
+    const jsonStr = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1];
+    const json = JSON.parse(jsonStr);
+    
+    return json.table.rows.map(row => 
+      row.c.map(cell => cell ? (cell.v || '') : '')
+    );
+  } catch(e) {
+    console.error('Error cargando los datos:', e);
+    return null;
+  }
+}
+
+function renderTable(data) {
+  const tableBody = document.getElementById('leadsTable');
+  tableBody.innerHTML = '';
+  
+  data.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${row[0]}</td>
+      <td><span class="status-badge status-qualified">${row[1]}</span></td>
+      <td>${row[2]}</td>
+    `;
+    tableBody.appendChild(tr);
+  });
+}
+
+async function init() {
+  document.getElementById('clinicName').textContent = CONFIG.CLINIC_NAME;
+  const data = await loadFromSheet();
+  if (data) {
+    document.getElementById('statTotal').textContent = data.length;
+    renderTable(data);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
