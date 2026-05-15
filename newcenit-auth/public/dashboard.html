@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Leads — {{CLINIC_NAME}}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:      #011b57;
+      --blue:      #033fbb;
+      --sky:       #2082d8;
+      --bg:        #f0f4fb;
+      --surface:   #ffffff;
+      --border:    #dde5f4;
+      --text:      #0a1628;
+      --muted:     #6b7ea8;
+      --accent-lt: #e8effe;
+      --green:     #0e9f6e;
+      --green-bg:  #e3f9f0;
+      --yellow:    #b45309;
+      --yellow-bg: #fef3c7;
+      --red:       #e02424;
+      --red-bg:    #fde8e8;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      background: var(--navy);
+      padding: 0 36px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 20px rgba(1,27,87,0.22);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+    .topbar-logo { width: 28px; height: 28px; flex-shrink: 0; }
+    .topbar-wordmark {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: white;
+      text-transform: lowercase;
+    }
+    .topbar-wordmark em { color: var(--sky); font-style: normal; }
+    .topbar-actions { display: flex; align-items: center; gap: 6px; }
+    .topbar-clinic-pill {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      padding-right: 10px;
+      border-right: 1px solid rgba(255,255,255,0.12);
+      margin-right: 6px;
+    }
+    .topbar-link {
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      padding: 5px 12px;
+      border-radius: 6px;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+    }
+    .topbar-link:hover { color: white; border-color: rgba(255,255,255,0.18); }
+    .topbar-link.logout:hover { color: #fca5a5; border-color: rgba(252,165,165,0.25); }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 55%, var(--sky) 100%);
+      padding: 38px 36px 52px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      right: -80px; top: -80px;
+      width: 360px; height: 360px;
+      border-radius: 50%;
+      background: rgba(32,130,216,0.1);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      left: 30%; bottom: -40px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      pointer-events: none;
+    }
+    .hero-inner { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+    .hero h1 {
+      font-size: 27px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+    .hero h1 span { color: #93c5fd; font-weight: 300; }
+    .hero p { margin-top: 7px; font-size: 13px; color: rgba(255,255,255,0.5); font-weight: 300; }
+
+    /* KPI CARDS — float up over hero */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      max-width: 1200px;
+      margin: -26px auto 0;
+      padding: 0 36px;
+      position: relative;
+      z-index: 2;
+    }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 22px 18px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(1,27,87,0.09);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .kpi:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(1,27,87,0.14); }
+    .kpi-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 14px 14px 0 0;
+    }
+    .kpi.calificado  .kpi-bar { background: var(--green); }
+    .kpi.tibio       .kpi-bar { background: #f59e0b; }
+    .kpi.descartado  .kpi-bar { background: var(--red); }
+    .kpi.informativo .kpi-bar { background: var(--sky); }
+    .kpi-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .kpi-value {
+      font-size: 44px;
+      font-weight: 700;
+      line-height: 1;
+      margin-top: 10px;
+      letter-spacing: -0.02em;
+    }
+    .kpi.calificado  .kpi-value { color: var(--green); }
+    .kpi.tibio       .kpi-value { color: #d97706; }
+    .kpi.descartado  .kpi-value { color: var(--red); }
+    .kpi.informativo .kpi-value { color: var(--sky); }
+    .kpi-sub { font-size: 11.5px; color: var(--muted); margin-top: 6px; font-weight: 400; }
+
+    /* FILTER BAR */
+    .filter-bar {
+      max-width: 1200px;
+      margin: 28px auto 0;
+      padding: 0 36px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 7px 16px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      font-family: 'Poppins', sans-serif;
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .filter-btn.active {
+      background: var(--navy);
+      color: white;
+      border-color: var(--navy);
+      box-shadow: 0 2px 10px rgba(1,27,87,0.22);
+    }
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 16px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      font-family: 'Poppins', sans-serif;
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+    .refresh-btn:hover { color: var(--blue); border-color: var(--blue); }
+    .search-wrap { margin-left: auto; position: relative; }
+    .search-input {
+      padding: 7px 14px 7px 34px;
+      border: 1.5px solid var(--border);
+      border-radius: 100px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 12.5px;
+      background: var(--surface);
+      color: var(--text);
+      width: 230px;
+      outline: none;
+      transition: border 0.15s;
+    }
+    .search-input:focus { border-color: var(--blue); }
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    /* TABLE */
+    .table-wrap {
+      max-width: 1200px;
+      margin: 18px auto 56px;
+      padding: 0 36px;
+    }
+    .table-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 16px rgba(1,27,87,0.07);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: #f6f9fe;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr { border-bottom: 1px solid #ecf1fb; transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f4f7ff; }
+    td { padding: 14px 18px; vertical-align: middle; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 11px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .badge-calificado  { background: var(--green-bg);  color: #065f46; }
+    .badge-calificado::before  { background: var(--green); }
+    .badge-tibio       { background: var(--yellow-bg); color: #92400e; }
+    .badge-tibio::before       { background: #f59e0b; }
+    .badge-descartado  { background: var(--red-bg);    color: #9b1c1c; }
+    .badge-descartado::before  { background: var(--red); }
+    .badge-informativo { background: var(--accent-lt); color: var(--blue); }
+    .badge-informativo::before { background: var(--sky); }
+
+    .td-name     { font-weight: 600; font-size: 13px; }
+    .td-email    { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+    .td-phone    { color: var(--muted); font-size: 12.5px; }
+    .td-date     { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .td-treatment{ font-size: 12.5px; font-weight: 500; color: var(--navy); }
+
+    .followup-row { display: flex; gap: 5px; }
+    .fp {
+      padding: 2px 9px;
+      border-radius: 5px;
+      font-size: 10.5px;
+      font-weight: 600;
+      background: var(--accent-lt);
+      color: var(--blue);
+      border: 1px solid var(--border);
+    }
+    .fp.sent { opacity: 0.35; text-decoration: line-through; }
+
+    .loading { text-align: center; padding: 72px 20px; color: var(--muted); font-size: 13px; }
+    .spinner {
+      width: 30px; height: 30px;
+      border: 2.5px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty { text-align: center; padding: 64px 20px; color: var(--muted); }
+    .empty-icon { font-size: 36px; margin-bottom: 12px; }
+    .empty p { font-size: 13.5px; }
+    .fade-in { animation: fadeIn 0.22s ease forwards; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+
+    @media (max-width: 900px) {
+      .kpi-row { grid-template-columns: repeat(2, 1fr); padding: 0 20px; }
+      .hero, .filter-bar, .table-wrap { padding-left: 20px; padding-right: 20px; }
+      .topbar { padding: 0 20px; }
+    }
+    @media (max-width: 640px) {
+      .topbar-clinic-pill { display: none; }
+      .search-wrap { margin-left: 0; width: 100%; }
+      .search-input { width: 100%; }
+      td:nth-child(4), th:nth-child(4),
+      td:nth-child(5), th:nth-child(5) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-brand">
+      <!-- SVG logo inline: triangle with inner A shape, white on transparent -->
+      <svg class="topbar-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- Outer triangle outline -->
+        <polygon points="50,6 95,88 5,88" fill="none" stroke="white" stroke-width="9" stroke-linejoin="round" opacity="0.3"/>
+        <!-- Left leg of the A -->
+        <polygon points="35,88 50,20 57,20 42,88" fill="white" opacity="0.6"/>
+        <!-- Right leg of the A -->
+        <polygon points="58,88 72,88 57,44 50,44" fill="white"/>
+        <!-- Crossbar of the A -->
+        <rect x="38" y="62" width="24" height="6" rx="2" fill="white" opacity="0.75"/>
+      </svg>
+      <span class="topbar-wordmark">new<em>cenit</em></span>
+    </div>
+    <div class="topbar-actions">
+      <span class="topbar-clinic-pill" id="topbar-clinic"></span>
+      <a class="topbar-link" href="/{{CLIENT_SLUG}}/change-password">Contraseña</a>
+      <a class="topbar-link logout" href="/api/logout">Salir</a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <h1>Panel de leads <span id="clinic-name-hero"></span></h1>
+      <p id="page-sub">Cargando datos...</p>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi calificado">
+      <div class="kpi-bar"></div>
+      <div class="kpi-label">Calificados</div>
+      <div class="kpi-value" id="kpi-calificado">—</div>
+      <div class="kpi-sub">Listos para cita</div>
+    </div>
+    <div class="kpi tibio">
+      <div class="kpi-bar"></div>
+      <div class="kpi-label">Tibios</div>
+      <div class="kpi-value" id="kpi-tibio">—</div>
+      <div class="kpi-sub">En seguimiento</div>
+    </div>
+    <div class="kpi descartado">
+      <div class="kpi-bar"></div>
+      <div class="kpi-label">Descartados</div>
+      <div class="kpi-value" id="kpi-descartado">—</div>
+      <div class="kpi-sub">No cualificados</div>
+    </div>
+    <div class="kpi informativo">
+      <div class="kpi-bar"></div>
+      <div class="kpi-label">Informativos</div>
+      <div class="kpi-value" id="kpi-informativo">—</div>
+      <div class="kpi-sub">Solo información</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="todos">Todos</button>
+    <button class="filter-btn" data-filter="Calificado">Calificados</button>
+    <button class="filter-btn" data-filter="Tibio">Tibios</button>
+    <button class="filter-btn" data-filter="Descartado">Descartados</button>
+    <button class="filter-btn" data-filter="Informativo">Informativos</button>
+    <button class="refresh-btn" id="refresh-btn">
+      <span id="refresh-icon">↻</span> Actualizar
+    </button>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" type="text" placeholder="Buscar nombre, email..." id="search-input" />
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-container">
+      <div class="loading" id="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando leads...</p>
+      </div>
+      <table id="leads-table" style="display:none;">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Tratamiento</th>
+            <th>Estado</th>
+            <th>Urgencia</th>
+            <th>Seguimientos</th>
+            <th>Fecha</th>
+            <th>Teléfono</th>
+          </tr>
+        </thead>
+        <tbody id="leads-tbody"></tbody>
+      </table>
+      <div class="empty" id="empty-state" style="display:none;">
+        <div class="empty-icon">📭</div>
+        <p>No hay leads con este filtro.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CONFIG = {
+      clinicName: '{{CLINIC_NAME}}',
+      sheetId:    '{{SHEET_ID}}',
+      sheetName:  '{{SHEET_TAB}}',
+    }
+
+    const COL = {
+      fecha: 0, nombre: 1, email: 2, telefono: 3,
+      tratamiento: 4, urgencia: 5, consulta: 6,
+      estado: 7, followup1: 8, followup2: 9,
+    }
+
+    let allLeads = [], activeFilter = 'todos', searchTerm = ''
+
+    document.getElementById('topbar-clinic').textContent = CONFIG.clinicName
+    document.getElementById('clinic-name-hero').textContent = CONFIG.clinicName
+
+    async function fetchLeads() {
+      const url = `https://docs.google.com/spreadsheets/d/${CONFIG.sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG.sheetName)}`
+      const res = await fetch(url)
+      const text = await res.text()
+      const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1])
+      return json.table.rows.map(r => r.c.map(c => c ? (c.f || c.v || '') : ''))
+    }
+
+    const norm = s => String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+
+    function renderKPIs(leads) {
+      const n = s => leads.filter(l => norm(l[COL.estado]) === norm(s)).length
+      document.getElementById('kpi-calificado').textContent  = n('Calificado')
+      document.getElementById('kpi-tibio').textContent       = n('Tibio')
+      document.getElementById('kpi-descartado').textContent  = n('Descartado')
+      document.getElementById('kpi-informativo').textContent = n('Informativo')
+      document.getElementById('page-sub').textContent =
+        `${leads.length} lead${leads.length!==1?'s':''} registrado${leads.length!==1?'s':''} · Actualizado hace un momento`
+    }
+
+    function badgeClass(e) {
+      const s = norm(e)
+      if (s==='calificado')  return 'badge-calificado'
+      if (s==='tibio')       return 'badge-tibio'
+      if (s==='descartado')  return 'badge-descartado'
+      if (s==='informativo') return 'badge-informativo'
+      return ''
+    }
+
+    const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+
+    function renderFollowups(f1, f2) {
+      return `<div class="followup-row">
+        <span class="fp${f1?' sent':''}">${f1?'✓ ':''} Email 1</span>
+        <span class="fp${f2?' sent':''}">${f2?'✓ ':''} Email 2</span>
+      </div>`
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('leads-tbody')
+      const table = document.getElementById('leads-table')
+      const empty = document.getElementById('empty-state')
+      let filtered = allLeads.filter(l => {
+        const mf = activeFilter==='todos' || norm(l[COL.estado])===norm(activeFilter)
+        const ms = !searchTerm || norm(l[COL.nombre]).includes(norm(searchTerm)) || norm(l[COL.email]).includes(norm(searchTerm))
+        return mf && ms
+      }).slice().reverse()
+      tbody.innerHTML = ''
+      if (!filtered.length) { table.style.display='none'; empty.style.display='block'; return }
+      table.style.display = 'table'; empty.style.display = 'none'
+      filtered.forEach((row, i) => {
+        const tr = document.createElement('tr')
+        tr.className = 'fade-in'
+        tr.style.animationDelay = `${i*0.025}s`
+        tr.innerHTML = `
+          <td><div class="td-name">${esc(row[COL.nombre])}</div><div class="td-email">${esc(row[COL.email])}</div></td>
+          <td class="td-treatment">${esc(row[COL.tratamiento])}</td>
+          <td><span class="badge ${badgeClass(row[COL.estado])}">${esc(row[COL.estado])}</span></td>
+          <td class="td-date">${esc(row[COL.urgencia])}</td>
+          <td>${renderFollowups(row[COL.followup1], row[COL.followup2])}</td>
+          <td class="td-date">${esc(row[COL.fecha])}</td>
+          <td class="td-phone">${esc(row[COL.telefono])}</td>`
+        tbody.appendChild(tr)
+      })
+    }
+
+    async function loadData() {
+      document.getElementById('loading-state').style.display = 'block'
+      document.getElementById('leads-table').style.display = 'none'
+      document.getElementById('empty-state').style.display = 'none'
+      try {
+        allLeads = await fetchLeads()
+        if (allLeads.length && norm(allLeads[0][COL.nombre])==='nombre') allLeads.shift()
+        renderKPIs(allLeads); renderTable()
+      } catch(e) {
+        document.getElementById('loading-state').innerHTML = `<div class="empty-icon">⚠️</div><p style="color:var(--muted)">Error cargando datos. Verifica que el Sheets es público.</p><p style="font-size:11px;margin-top:6px;color:#aaa">${e.message}</p>`
+        return
+      }
+      document.getElementById('loading-state').style.display = 'none'
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
+      btn.classList.add('active'); activeFilter = btn.dataset.filter; renderTable()
+    }))
+
+    document.getElementById('search-input').addEventListener('input', e => { searchTerm = e.target.value; renderTable() })
+
+    document.getElementById('refresh-btn').addEventListener('click', () => {
+      const ic = document.getElementById('refresh-icon')
+      ic.style.animation = 'spin 0.6s linear'
+      setTimeout(() => ic.style.animation = '', 700)
+      loadData()
+    })
+
+    loadData()
+  </script>
+</body>
+</html>

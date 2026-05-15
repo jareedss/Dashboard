@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/:path*" },
+    { "source": "/:client/login", "destination": "/api/login-page?client=:client" },
+    { "source": "/:client", "destination": "/api/dashboard?client=:client" }
+  ]
+}
